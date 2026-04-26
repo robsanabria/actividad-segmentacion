@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, ArrowRight, BrainCircuit, Gamepad2, Dumbbell, Laugh, Lightbulb, Users, Settings } from 'lucide-react';
+import { Play, ArrowRight, BrainCircuit, Gamepad2, Dumbbell, Laugh, Lightbulb, Users, Settings, CheckCircle2 } from 'lucide-react';
 import { questions, profilesData } from './data/questions';
 import './index.css';
 
@@ -17,6 +17,9 @@ function App() {
   const [gameState, setGameState] = useState('start'); // start, playing, question_results, calculating, result
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   
+  // Local state
+  const [hasVoted, setHasVoted] = useState(false);
+
   // Global collective scores from the server
   const [globalScores, setGlobalScores] = useState({
     Entretenimiento: 0,
@@ -32,13 +35,11 @@ function App() {
   const stateInterval = useRef(null);
 
   useEffect(() => {
-    // Check if URL has ?admin=true
     const params = new URLSearchParams(window.location.search);
     if (params.get('admin') === 'true') {
       setIsAdmin(true);
     }
 
-    // ALWAYS poll the global game state so everyone stays in sync
     startStatePolling();
 
     return () => {
@@ -46,6 +47,11 @@ function App() {
       stopStatePolling();
     };
   }, []);
+
+  // Reset "hasVoted" automatically when the question changes globally
+  useEffect(() => {
+    setHasVoted(false);
+  }, [currentQuestionIndex]);
 
   // --- API FUNCTIONS ---
 
@@ -55,14 +61,12 @@ function App() {
       if (response.ok) {
         const data = await response.json();
         
-        // If the server tells us to change screens, we change instantly!
         setGameState((prev) => {
           if (prev !== data.gameState && data.gameState) return data.gameState;
           return prev;
         });
         
         setCurrentQuestionIndex((prev) => {
-          // ensure data exists
           if (data.currentQuestionIndex !== undefined && prev !== data.currentQuestionIndex) {
              return data.currentQuestionIndex;
           }
@@ -85,7 +89,6 @@ function App() {
           resetVotes: reset
         })
       });
-      // update locally instantly for snappy UI
       setGameState(newState);
       setCurrentQuestionIndex(newIndex);
     } catch (e) {
@@ -137,9 +140,9 @@ function App() {
     }
   };
 
-  // Turn on score polling only when on result screens
+  // Turn on score polling only when on result screens or calculating
   useEffect(() => {
-    if (gameState === 'question_results') {
+    if (gameState === 'question_results' || gameState === 'calculating') {
       startScoresPolling();
     } else {
       stopScoresPolling();
@@ -158,21 +161,22 @@ function App() {
 
   const startAdminGame = () => {
     if (!isAdmin) return;
-    // Reset votes and set state to playing Q0
     updateGlobalState('playing', 0, true);
   };
 
   const handleOptionClick = async (profile) => {
-    // 1. Optimistic local update
+    if (hasVoted) return;
+    
+    // Mark as voted locally so they can't spam
+    setHasVoted(true);
+
+    // Optimistic local update
     setGlobalScores(prev => ({
       ...prev,
       [profile]: (prev[profile] || 0) + 1
     }));
 
-    // 2. Move user to waiting screen (local state change ONLY for them)
-    setGameState('question_results');
-
-    // 3. Send vote to server
+    // Send vote to server
     try {
       await fetch('/api/vote', {
         method: 'POST',
@@ -184,16 +188,19 @@ function App() {
     }
   };
 
+  const showLiveResultsAdmin = () => {
+    if (!isAdmin) return;
+    // Changes global state to question_results so everyone sees the bars
+    updateGlobalState('question_results', currentQuestionIndex);
+  };
+
   const goToNextQuestionAdmin = () => {
     if (!isAdmin) return;
     
     if (currentQuestionIndex < questions.length - 1) {
       updateGlobalState('playing', currentQuestionIndex + 1);
     } else {
-      // Trigger calculation for everyone
       updateGlobalState('calculating', currentQuestionIndex);
-      
-      // After 3 seconds, show final results
       setTimeout(() => {
         updateGlobalState('result', currentQuestionIndex);
       }, 3000);
@@ -247,28 +254,57 @@ function App() {
         <p style={{ textAlign: 'left', marginBottom: '0.5rem', fontWeight: 'bold', color: '#a78bfa' }}>
           Pregunta {currentQuestionIndex + 1} de {questions.length}
         </p>
-        <h2 style={{ textAlign: 'left', fontSize: '1.75rem' }}>{question.question}</h2>
-        <div className="options-grid">
-          {question.options.map((option, index) => (
-            <button
-              key={index}
-              className="option-btn"
-              onClick={() => handleOptionClick(option.profile)}
-            >
-              {option.text}
+        <h2 style={{ textAlign: 'left', fontSize: '1.75rem', marginBottom: '2rem' }}>{question.question}</h2>
+        
+        {/* If student hasn't voted OR is Admin, show the options grid */}
+        {(!hasVoted || isAdmin) && (
+          <div className="options-grid" style={{ marginBottom: isAdmin ? '2rem' : '0' }}>
+            {question.options.map((option, index) => (
+              <button
+                key={index}
+                className="option-btn"
+                onClick={() => handleOptionClick(option.profile)}
+                disabled={hasVoted && !isAdmin}
+                style={{ opacity: (hasVoted && !isAdmin) ? 0.5 : 1 }}
+              >
+                {option.text}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* If student HAS voted, show the waiting message */}
+        {hasVoted && !isAdmin && (
+          <div style={{ textAlign: 'center', padding: '2rem 0' }} className="animate-fade-in">
+            <CheckCircle2 size={64} color="#10b981" style={{ margin: '0 auto 1rem auto' }} />
+            <h3 style={{ color: '#10b981', marginBottom: '0.5rem' }}>¡Voto Registrado!</h3>
+            <p style={{ color: '#cbd5e1' }}>Mira a la pantalla principal para ver los resultados.</p>
+          </div>
+        )}
+
+        {/* Admin controls to show results */}
+        {isAdmin && (
+          <div style={{ textAlign: 'center', marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>
+            <p style={{ color: '#cbd5e1', marginBottom: '1rem' }}>Espera a que los alumnos voten...</p>
+            <button className="btn-primary" style={{ width: '100%', background: 'linear-gradient(135deg, #10b981, #059669)' }} onClick={showLiveResultsAdmin}>
+              Terminar y Mostrar Resultados <Users size={20} />
             </button>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
     );
   };
 
   const renderQuestionResults = () => {
     const totalVotes = Object.values(globalScores).reduce((a, b) => a + b, 0) || 1;
+    const question = questions[currentQuestionIndex];
 
     return (
       <div className="glass-panel animate-fade-in" style={{ width: '100%' }}>
-        <h2 style={{ marginBottom: '2rem' }}>Resultados en Vivo</h2>
+        {isAdmin && (
+           <h3 style={{ textAlign: 'left', color: '#cbd5e1', fontSize: '1.1rem', marginBottom: '0.5rem' }}>{question.question}</h3>
+        )}
+        <h2 style={{ marginBottom: '2rem', textAlign: 'left' }}>Resultados en Vivo</h2>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
           {Object.keys(profilesData).map((profileKey) => {
@@ -298,14 +334,14 @@ function App() {
         </div>
 
         {!isAdmin && (
-          <p style={{ color: '#a78bfa', fontWeight: 'bold', animation: 'pulse 2s infinite' }}>
-            Esperando al profesor...
+          <p style={{ color: '#a78bfa', fontWeight: 'bold', animation: 'pulse 2s infinite', textAlign: 'center' }}>
+            Siguiente pregunta en breve...
           </p>
         )}
 
         {isAdmin && (
           <button className="btn-primary" style={{ width: '100%' }} onClick={goToNextQuestionAdmin}>
-            Siguiente (Admin) <ArrowRight size={20} />
+            Siguiente Pregunta (Admin) <ArrowRight size={20} />
           </button>
         )}
       </div>
@@ -323,7 +359,6 @@ function App() {
   );
 
   const renderResultScreen = () => {
-    // Fallback just in case
     const safeProfile = finalProfile || "Entretenimiento";
     const profile = profilesData[safeProfile];
     const IconComponent = IconMap[profile.icon];
