@@ -22,10 +22,10 @@ function App() {
 
   // Global collective scores from the server
   const [globalProfiles, setGlobalProfiles] = useState({
-    Entretenimiento: 0,
-    Gamer: 0,
-    Fitness: 0,
-    Nerd: 0
+    Frutinovelas: 0,
+    Doomscroller: 0,
+    CEO: 0,
+    Conspiranoico: 0
   });
 
   const [questionScores, setQuestionScores] = useState({});
@@ -212,7 +212,7 @@ function App() {
     let data = await fetchGlobalScores();
     let finalScores = data ? data.profiles : globalProfiles;
     
-    const predefinedProfiles = ["Entretenimiento", "Gamer", "Fitness", "Nerd"];
+    const predefinedProfiles = ["Frutinovelas", "Doomscroller", "CEO", "Conspiranoico"];
     let maxProfile = predefinedProfiles[0];
     let maxScore = -1;
     
