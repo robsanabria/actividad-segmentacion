@@ -11,14 +11,20 @@ export default async function handler(request, response) {
   }
 
   try {
-    const { profile } = request.body;
+    const { profile, questionIndex, optionIndex } = request.body;
     
     if (!profile) {
       return response.status(400).json({ error: 'Profile is required' });
     }
 
-    // Increment the score for the specific profile
-    const newValue = await kv.hincrby('pd2_segmentation_scores', profile, 1);
+    // 1. Increment global profile score (for final result)
+    await kv.hincrby('pd2_segmentation_scores', profile, 1);
+    
+    // 2. Increment specific question option score (for live bars)
+    let newValue = 1;
+    if (questionIndex !== undefined && optionIndex !== undefined) {
+      newValue = await kv.hincrby('pd2_question_scores', `q${questionIndex}_opt${optionIndex}`, 1);
+    }
 
     return response.status(200).json({ success: true, profile, newValue });
   } catch (error) {

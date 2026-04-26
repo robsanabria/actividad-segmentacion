@@ -25,6 +25,7 @@ export default async function handler(request, response) {
       if (resetVotes) {
         // Reset all votes to 0
         await kv.del('pd2_segmentation_scores');
+        await kv.del('pd2_question_scores');
       }
 
       await kv.hset('pd2_game_state', {

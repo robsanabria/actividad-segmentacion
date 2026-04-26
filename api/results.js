@@ -13,6 +13,7 @@ export default async function handler(request, response) {
   try {
     // Get all scores from the hash
     let scores = await kv.hgetall('pd2_segmentation_scores');
+    let questionScores = await kv.hgetall('pd2_question_scores');
     
     // If it's empty/null, initialize it
     if (!scores) {
@@ -30,7 +31,11 @@ export default async function handler(request, response) {
       });
     }
 
-    return response.status(200).json(scores);
+    if (!questionScores) {
+      questionScores = {};
+    }
+
+    return response.status(200).json({ profiles: scores, questions: questionScores });
   } catch (error) {
     return response.status(500).json({ error: error.message });
   }

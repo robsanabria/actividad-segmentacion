@@ -21,12 +21,14 @@ function App() {
   const [hasVoted, setHasVoted] = useState(false);
 
   // Global collective scores from the server
-  const [globalScores, setGlobalScores] = useState({
+  const [globalProfiles, setGlobalProfiles] = useState({
     Entretenimiento: 0,
     Gamer: 0,
     Fitness: 0,
     Nerd: 0
   });
+
+  const [questionScores, setQuestionScores] = useState({});
 
   const [finalProfile, setFinalProfile] = useState(null);
   
@@ -101,7 +103,8 @@ function App() {
       const response = await fetch('/api/results');
       if (response.ok) {
         const data = await response.json();
-        setGlobalScores(data);
+        setGlobalProfiles(data.profiles || {});
+        setQuestionScores(data.questions || {});
         return data;
       }
     } catch (error) {
@@ -164,24 +167,22 @@ function App() {
     updateGlobalState('playing', 0, true);
   };
 
-  const handleOptionClick = async (profile) => {
+  const handleOptionClick = async (profile, optionIndex) => {
     if (hasVoted) return;
     
     // Mark as voted locally so they can't spam
     setHasVoted(true);
 
-    // Optimistic local update
-    setGlobalScores(prev => ({
-      ...prev,
-      [profile]: (prev[profile] || 0) + 1
-    }));
-
-    // Send vote to server
+    // Send vote to server with question and option info
     try {
       await fetch('/api/vote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile })
+        body: JSON.stringify({ 
+          profile, 
+          questionIndex: currentQuestionIndex, 
+          optionIndex 
+        })
       });
     } catch (e) {
       console.warn("No se pudo enviar el voto");
@@ -208,8 +209,8 @@ function App() {
   };
 
   const calculateFinalProfileLocally = async () => {
-    let finalScores = await fetchGlobalScores();
-    if (!finalScores) finalScores = globalScores;
+    let data = await fetchGlobalScores();
+    let finalScores = data ? data.profiles : globalProfiles;
     
     let maxProfile = Object.keys(finalScores)[0] || "Entretenimiento";
     let maxScore = finalScores[maxProfile] || 0;
@@ -263,7 +264,7 @@ function App() {
               <button
                 key={index}
                 className="option-btn"
-                onClick={() => handleOptionClick(option.profile)}
+                onClick={() => handleOptionClick(option.profile, index)}
                 disabled={hasVoted && !isAdmin}
                 style={{ opacity: (hasVoted && !isAdmin) ? 0.5 : 1 }}
               >
@@ -296,8 +297,15 @@ function App() {
   };
 
   const renderQuestionResults = () => {
-    const totalVotes = Object.values(globalScores).reduce((a, b) => a + b, 0) || 1;
     const question = questions[currentQuestionIndex];
+    
+    // Calculate total votes for this specific question
+    let totalVotes = 0;
+    question.options.forEach((_, index) => {
+      totalVotes += parseInt(questionScores[`q${currentQuestionIndex}_opt${index}`] || 0);
+    });
+    
+    if (totalVotes === 0) totalVotes = 1; // avoid divide by zero
 
     return (
       <div className="glass-panel animate-fade-in" style={{ width: '100%' }}>
@@ -307,15 +315,18 @@ function App() {
         <h2 style={{ marginBottom: '2rem', textAlign: 'left' }}>Resultados en Vivo</h2>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
-          {Object.keys(profilesData).map((profileKey) => {
-            const profile = profilesData[profileKey];
-            const score = globalScores[profileKey] || 0;
+          {question.options.map((option, index) => {
+            const score = parseInt(questionScores[`q${currentQuestionIndex}_opt${index}`] || 0);
             const percentage = Math.round((score / totalVotes) * 100);
             
+            // Generate a color based on the index to differentiate the bars
+            const colors = ['#f43f5e', '#3b82f6', '#10b981', '#8b5cf6'];
+            const barColor = colors[index % colors.length];
+            
             return (
-              <div key={profileKey} style={{ textAlign: 'left' }}>
+              <div key={index} style={{ textAlign: 'left' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                  <span style={{ fontWeight: '600' }}>{profile.title.replace('¡Usuario ', '').replace('!', '')}</span>
+                  <span style={{ fontWeight: '600' }}>{option.text}</span>
                   <span>{score} votos ({percentage}%)</span>
                 </div>
                 <div style={{ width: '100%', height: '24px', background: 'rgba(255,255,255,0.1)', borderRadius: '12px', overflow: 'hidden' }}>
@@ -323,7 +334,7 @@ function App() {
                     style={{ 
                       height: '100%', 
                       width: `${percentage}%`, 
-                      background: profile.color,
+                      background: barColor,
                       transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' 
                     }}
                   ></div>
