@@ -39,27 +39,27 @@ export const profilesData = {
     description: "El algoritmo ya te sacó la ficha de tu gusto culposo. Sabe que te re quedás viendo dramas falopa narrados por IA. ¡Te segmentó por tu tiempo de retención en el chisme!",
     color: "#ec4899", // Pink
     icon: "Ghost",
-    gif: "https://media.giphy.com/media/l4Ho0At2UD2d7WyD6/giphy.gif" // Dramatic soap opera
+    gif: "https://media.tenor.com/HnK18XlH8_wAAAAC/dramatic-telenovela.gif" // Dramatic soap opera
   },
   "Doomscroller": {
     title: "¡Doomscroller Crónico!",
     description: "El algoritmo sabe que tu cerebro necesita dopamina ya. Te tira videos cortos y memes infinitos porque sabe que no podés soltar el celu. ¡Te segmentó por tu falta de atención!",
     color: "#3b82f6", // Blue
     icon: "Smartphone",
-    gif: "https://media.giphy.com/media/3o6ozh46EBuLIYLIGQ/giphy.gif" // Homer staring at phone
+    gif: "https://media.tenor.com/tH0-jYV12XAAAAAC/simpsons-homer.gif" // Homer staring
   },
   "CEO": {
     title: "¡Mentalidad de Tiburón!",
     description: "Te perfilaron como el 'Hustler'. Te llueven podcasts de cripto y herramientas de IA para ser más productivo y facturar. ¡Te segmentaron por tus búsquedas de éxito!",
     color: "#10b981", // Green
     icon: "Briefcase",
-    gif: "https://media.giphy.com/media/YmQLj2KxaVZ58q1111/giphy.gif" // Wolf of wall street / hype
+    gif: "https://media.tenor.com/eB9H8aI88J0AAAAC/wolf-of-wall-street-matthew-mcconaughey.gif" // Wolf of wall street / hype
   },
   "Conspiranoico": {
     title: "¡El Conspiranoico!",
     description: "El algoritmo sabe que dudás de todo. Para mantenerte enganchado (engagement), te tira teorías conspirativas, cosas de privacidad y el fin del mundo. ¡Te segmentó por tu nivel de paranoia!",
     color: "#8b5cf6", // Purple
     icon: "Eye",
-    gif: "https://media.giphy.com/media/l0IylOPKVkiVDZA0g/giphy.gif" // Charlie Day Pepe Silvia
+    gif: "https://media.tenor.com/cE01D9qU3R8AAAAC/its-always-sunny-in-philadelphia-charlie-kelly.gif" // Charlie Day Pepe Silvia
   }
 };
