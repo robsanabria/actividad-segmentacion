@@ -378,12 +378,11 @@ function App() {
 
     return (
       <div className="glass-panel animate-fade-in" style={{ padding: '2rem' }}>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <img 
-            src={profile.gif} 
-            alt="Profile GIF" 
-            style={{ borderRadius: '12px', width: '100%', maxWidth: '300px', height: '200px', objectFit: 'cover', margin: '0 auto', display: 'block', border: `4px solid ${profile.color}` }} 
-          />
+        <div 
+          className="result-icon-container animate-float" 
+          style={{ background: `linear-gradient(135deg, ${profile.color}, #ffffff)` }}
+        >
+          <IconComponent size={48} color="#1e1b4b" />
         </div>
         <p style={{ fontSize: '1.25rem', color: '#cbd5e1', marginBottom: '0.5rem' }}>El perfil de este curso es:</p>
         <h1 style={{ background: 'none', WebkitTextFillColor: 'initial', color: profile.color }}>
