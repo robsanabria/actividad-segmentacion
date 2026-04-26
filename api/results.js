@@ -7,7 +7,7 @@ export default async function handler(request, response) {
 
   try {
     // Get all scores from the hash
-    let scores = await kv.hgetall('segmentation_scores');
+    let scores = await kv.hgetall('pd2_segmentation_scores');
     
     // If it's empty/null, initialize it
     if (!scores) {

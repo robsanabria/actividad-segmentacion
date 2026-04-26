@@ -13,7 +13,7 @@ export default async function handler(request, response) {
     }
 
     // Increment the score for the specific profile
-    const newValue = await kv.hincrby('segmentation_scores', profile, 1);
+    const newValue = await kv.hincrby('pd2_segmentation_scores', profile, 1);
 
     return response.status(200).json({ success: true, profile, newValue });
   } catch (error) {
