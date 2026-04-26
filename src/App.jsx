@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, ArrowRight, BrainCircuit, Gamepad2, Dumbbell, Laugh, Lightbulb, Users } from 'lucide-react';
+import { Play, ArrowRight, BrainCircuit, Gamepad2, Dumbbell, Laugh, Lightbulb, Users, Settings } from 'lucide-react';
 import { questions, profilesData } from './data/questions';
 import './index.css';
 
@@ -11,16 +11,11 @@ const IconMap = {
 };
 
 function App() {
-  const [gameState, setGameState] = useState('start'); // start, playing, question_results, result
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
   
-  // Local state as fallback
-  const [localScores, setLocalScores] = useState({
-    Entretenimiento: 0,
-    Gamer: 0,
-    Fitness: 0,
-    Nerd: 0
-  });
+  // Global synchronized state
+  const [gameState, setGameState] = useState('start'); // start, playing, question_results, calculating, result
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   
   // Global collective scores from the server
   const [globalScores, setGlobalScores] = useState({
@@ -32,15 +27,71 @@ function App() {
 
   const [finalProfile, setFinalProfile] = useState(null);
   
-  // To handle polling interval
-  const pollInterval = useRef(null);
+  // Polling intervals
+  const scoresInterval = useRef(null);
+  const stateInterval = useRef(null);
 
   useEffect(() => {
-    // Cleanup polling on unmount
+    // Check if URL has ?admin=true
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('admin') === 'true') {
+      setIsAdmin(true);
+    }
+
+    // ALWAYS poll the global game state so everyone stays in sync
+    startStatePolling();
+
     return () => {
-      if (pollInterval.current) clearInterval(pollInterval.current);
+      stopScoresPolling();
+      stopStatePolling();
     };
   }, []);
+
+  // --- API FUNCTIONS ---
+
+  const fetchGlobalState = async () => {
+    try {
+      const response = await fetch('/api/state');
+      if (response.ok) {
+        const data = await response.json();
+        
+        // If the server tells us to change screens, we change instantly!
+        setGameState((prev) => {
+          if (prev !== data.gameState && data.gameState) return data.gameState;
+          return prev;
+        });
+        
+        setCurrentQuestionIndex((prev) => {
+          // ensure data exists
+          if (data.currentQuestionIndex !== undefined && prev !== data.currentQuestionIndex) {
+             return data.currentQuestionIndex;
+          }
+          return prev;
+        });
+      }
+    } catch (e) {
+      console.warn("Error fetching state");
+    }
+  };
+
+  const updateGlobalState = async (newState, newIndex, reset = false) => {
+    try {
+      await fetch('/api/state', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          gameState: newState, 
+          currentQuestionIndex: newIndex,
+          resetVotes: reset
+        })
+      });
+      // update locally instantly for snappy UI
+      setGameState(newState);
+      setCurrentQuestionIndex(newIndex);
+    } catch (e) {
+      console.error("Error updating state", e);
+    }
+  };
 
   const fetchGlobalScores = async () => {
     try {
@@ -51,41 +102,77 @@ function App() {
         return data;
       }
     } catch (error) {
-      console.warn("API no disponible, usando fallback local:", error);
+      console.warn("API no disponible para scores:", error);
     }
     return null;
   };
 
-  const startPolling = () => {
-    fetchGlobalScores(); // fetch immediate
-    pollInterval.current = setInterval(() => {
-      fetchGlobalScores();
-    }, 2000); // Poll every 2 seconds for that "live" feel
-  };
+  // --- POLLING CONTROLS ---
 
-  const stopPolling = () => {
-    if (pollInterval.current) {
-      clearInterval(pollInterval.current);
+  const startStatePolling = () => {
+    fetchGlobalState();
+    if (!stateInterval.current) {
+      stateInterval.current = setInterval(fetchGlobalState, 2000);
     }
   };
 
-  const startGame = () => {
-    setGameState('playing');
-    setCurrentQuestionIndex(0);
+  const stopStatePolling = () => {
+    if (stateInterval.current) {
+      clearInterval(stateInterval.current);
+      stateInterval.current = null;
+    }
+  };
+
+  const startScoresPolling = () => {
+    fetchGlobalScores();
+    if (!scoresInterval.current) {
+      scoresInterval.current = setInterval(fetchGlobalScores, 2000);
+    }
+  };
+
+  const stopScoresPolling = () => {
+    if (scoresInterval.current) {
+      clearInterval(scoresInterval.current);
+      scoresInterval.current = null;
+    }
+  };
+
+  // Turn on score polling only when on result screens
+  useEffect(() => {
+    if (gameState === 'question_results') {
+      startScoresPolling();
+    } else {
+      stopScoresPolling();
+    }
+  }, [gameState]);
+
+  // When calculating, calculate final profile
+  useEffect(() => {
+    if (gameState === 'calculating') {
+      calculateFinalProfileLocally();
+    }
+  }, [gameState]);
+
+
+  // --- USER ACTIONS ---
+
+  const startAdminGame = () => {
+    if (!isAdmin) return;
+    // Reset votes and set state to playing Q0
+    updateGlobalState('playing', 0, true);
   };
 
   const handleOptionClick = async (profile) => {
-    // 1. Optimistic local update (fallback)
-    const newLocal = { ...localScores, [profile]: localScores[profile] + 1 };
-    setLocalScores(newLocal);
-    
-    // Set our view to global scores (optimistic)
+    // 1. Optimistic local update
     setGlobalScores(prev => ({
       ...prev,
-      [profile]: prev[profile] + 1
+      [profile]: (prev[profile] || 0) + 1
     }));
 
-    // 2. Send to Vercel KV via API
+    // 2. Move user to waiting screen (local state change ONLY for them)
+    setGameState('question_results');
+
+    // 3. Send vote to server
     try {
       await fetch('/api/vote', {
         method: 'POST',
@@ -93,37 +180,30 @@ function App() {
         body: JSON.stringify({ profile })
       });
     } catch (e) {
-      console.warn("No se pudo enviar el voto al servidor", e);
+      console.warn("No se pudo enviar el voto");
     }
-
-    // 3. Move to live results view for this question
-    setGameState('question_results');
-    startPolling();
   };
 
-  const goToNextQuestion = () => {
-    stopPolling();
+  const goToNextQuestionAdmin = () => {
+    if (!isAdmin) return;
+    
     if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      setGameState('playing');
+      updateGlobalState('playing', currentQuestionIndex + 1);
     } else {
-      calculateFinalResult();
+      // Trigger calculation for everyone
+      updateGlobalState('calculating', currentQuestionIndex);
+      
+      // After 3 seconds, show final results
+      setTimeout(() => {
+        updateGlobalState('result', currentQuestionIndex);
+      }, 3000);
     }
   };
 
-  const calculateFinalResult = async () => {
-    stopPolling();
-    setGameState('calculating');
-    
-    // Fetch final definitive scores
+  const calculateFinalProfileLocally = async () => {
     let finalScores = await fetchGlobalScores();
+    if (!finalScores) finalScores = globalScores;
     
-    if (!finalScores || Object.keys(finalScores).length === 0) {
-      // Fallback to local if no API
-      finalScores = localScores;
-    }
-    
-    // Find highest global score
     let maxProfile = Object.keys(finalScores)[0] || "Entretenimiento";
     let maxScore = finalScores[maxProfile] || 0;
     
@@ -133,12 +213,7 @@ function App() {
         maxProfile = profile;
       }
     }
-
     setFinalProfile(maxProfile);
-
-    setTimeout(() => {
-      setGameState('result');
-    }, 2000);
   };
 
   // --- RENDERS ---
@@ -149,11 +224,14 @@ function App() {
         <Users size={64} color="#fcd34d" style={{ margin: '0 auto' }} />
       </div>
       <h1>Votación Colectiva</h1>
-      <p>Vota desde tu celular. Los resultados de toda la clase se actualizarán en vivo.</p>
-      <button className="btn-primary animate-pulse-slow" onClick={startGame}>
-        <Play size={24} />
-        Comenzar Actividad
-      </button>
+      <p>Espera a que el profesor inicie la partida...</p>
+      
+      {isAdmin && (
+        <button className="btn-primary animate-pulse-slow" style={{ marginTop: '1rem' }} onClick={startAdminGame}>
+          <Settings size={24} />
+          Iniciar Clase (Admin)
+        </button>
+      )}
     </div>
   );
 
@@ -186,7 +264,7 @@ function App() {
   };
 
   const renderQuestionResults = () => {
-    const totalVotes = Object.values(globalScores).reduce((a, b) => a + b, 0) || 1; // avoid / 0
+    const totalVotes = Object.values(globalScores).reduce((a, b) => a + b, 0) || 1;
 
     return (
       <div className="glass-panel animate-fade-in" style={{ width: '100%' }}>
@@ -219,9 +297,17 @@ function App() {
           })}
         </div>
 
-        <button className="btn-primary" style={{ width: '100%' }} onClick={goToNextQuestion}>
-          Siguiente <ArrowRight size={20} />
-        </button>
+        {!isAdmin && (
+          <p style={{ color: '#a78bfa', fontWeight: 'bold', animation: 'pulse 2s infinite' }}>
+            Esperando al profesor...
+          </p>
+        )}
+
+        {isAdmin && (
+          <button className="btn-primary" style={{ width: '100%' }} onClick={goToNextQuestionAdmin}>
+            Siguiente (Admin) <ArrowRight size={20} />
+          </button>
+        )}
       </div>
     );
   };
@@ -237,7 +323,9 @@ function App() {
   );
 
   const renderResultScreen = () => {
-    const profile = profilesData[finalProfile];
+    // Fallback just in case
+    const safeProfile = finalProfile || "Entretenimiento";
+    const profile = profilesData[safeProfile];
     const IconComponent = IconMap[profile.icon];
 
     return (
@@ -263,6 +351,15 @@ function App() {
           </p>
         </div>
 
+        {isAdmin && (
+          <button 
+            className="btn-primary" 
+            style={{ marginTop: '2rem', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)' }}
+            onClick={() => updateGlobalState('start', 0, true)}
+          >
+            Reiniciar Partida
+          </button>
+        )}
       </div>
     );
   };
