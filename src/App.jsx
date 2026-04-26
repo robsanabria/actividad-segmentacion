@@ -212,12 +212,14 @@ function App() {
     let data = await fetchGlobalScores();
     let finalScores = data ? data.profiles : globalProfiles;
     
-    let maxProfile = Object.keys(finalScores)[0] || "Entretenimiento";
-    let maxScore = finalScores[maxProfile] || 0;
+    const predefinedProfiles = ["Entretenimiento", "Gamer", "Fitness", "Nerd"];
+    let maxProfile = predefinedProfiles[0];
+    let maxScore = -1;
     
-    for (const profile in finalScores) {
-      if (finalScores[profile] > maxScore) {
-        maxScore = finalScores[profile];
+    for (const profile of predefinedProfiles) {
+      const score = parseInt(finalScores[profile] || 0, 10);
+      if (score > maxScore) {
+        maxScore = score;
         maxProfile = profile;
       }
     }
