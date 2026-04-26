@@ -39,7 +39,7 @@ export const profilesData = {
     description: "El algoritmo ya te sacó la ficha de tu gusto culposo. Sabe que te re quedás viendo dramas falopa narrados por IA. ¡Te segmentó por tu tiempo de retención en el chisme!",
     color: "#ec4899", // Pink
     icon: "Ghost",
-    gif: "https://media.tenor.com/HnK18XlH8_wAAAAC/dramatic-telenovela.gif" // Dramatic soap opera
+    gif: "https://media.tenor.com/bZe6n1h7t0UAAAAC/drama.gif" // Dramatic soap opera
   },
   "Doomscroller": {
     title: "¡Doomscroller Crónico!",
