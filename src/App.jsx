@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, ArrowRight, BrainCircuit, Gamepad2, Dumbbell, Laugh, Lightbulb, Users, Settings, CheckCircle2 } from 'lucide-react';
+import { Play, ArrowRight, Lightbulb, Users, Settings, CheckCircle2, Ghost, Smartphone, Briefcase, Eye } from 'lucide-react';
 import { questions, profilesData } from './data/questions';
 import './index.css';
 
 const IconMap = {
-  BrainCircuit,
-  Gamepad2,
-  Dumbbell,
-  Laugh
+  Ghost,
+  Smartphone,
+  Briefcase,
+  Eye
 };
 
 function App() {
@@ -364,7 +364,7 @@ function App() {
   const renderCalculatingScreen = () => (
     <div className="glass-panel animate-fade-in" style={{ textAlign: 'center' }}>
       <div className="animate-pulse-slow">
-        <BrainCircuit size={80} color="#c084fc" style={{ margin: '0 auto 2rem auto' }} />
+        <Lightbulb size={80} color="#c084fc" style={{ margin: '0 auto 2rem auto' }} />
       </div>
       <h2>Calculando el perfil del aula...</h2>
       <p>Sumando los votos de todos los compañeros...</p>
@@ -372,7 +372,7 @@ function App() {
   );
 
   const renderResultScreen = () => {
-    const safeProfile = finalProfile || "Entretenimiento";
+    const safeProfile = finalProfile || "Frutinovelas";
     const profile = profilesData[safeProfile];
     const IconComponent = IconMap[profile.icon];
 
