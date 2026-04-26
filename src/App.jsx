@@ -233,13 +233,13 @@ function App() {
       <div className="animate-float" style={{ marginBottom: '2rem' }}>
         <Users size={64} color="#fcd34d" style={{ margin: '0 auto' }} />
       </div>
-      <h1>Votación Colectiva</h1>
-      <p>Espera a que el profesor inicie la partida...</p>
+      <h1>Votación NTICx</h1>
+      <p>Bancá un toque que el profe arranca la partida...</p>
       
       {isAdmin && (
         <button className="btn-primary animate-pulse-slow" style={{ marginTop: '1rem' }} onClick={startAdminGame}>
           <Settings size={24} />
-          Iniciar Clase (Admin)
+          Arrancar la clase (Profe)
         </button>
       )}
     </div>
@@ -280,15 +280,15 @@ function App() {
         {hasVoted && !isAdmin && (
           <div style={{ textAlign: 'center', padding: '2rem 0' }} className="animate-fade-in">
             <CheckCircle2 size={64} color="#10b981" style={{ margin: '0 auto 1rem auto' }} />
-            <h3 style={{ color: '#10b981', marginBottom: '0.5rem' }}>¡Voto Registrado!</h3>
-            <p style={{ color: '#cbd5e1' }}>Mira a la pantalla principal para ver los resultados.</p>
+            <h3 style={{ color: '#10b981', marginBottom: '0.5rem' }}>¡Voto guardado!</h3>
+            <p style={{ color: '#cbd5e1' }}>Fijate en la pantalla del profe.</p>
           </div>
         )}
 
         {/* Admin controls to show results */}
         {isAdmin && (
           <div style={{ textAlign: 'center', marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '2rem' }}>
-            <p style={{ color: '#cbd5e1', marginBottom: '1rem' }}>Espera a que los alumnos voten...</p>
+            <p style={{ color: '#cbd5e1', marginBottom: '1rem' }}>Esperá a que los chicos voten...</p>
             <button className="btn-primary" style={{ width: '100%', background: 'linear-gradient(135deg, #10b981, #059669)' }} onClick={showLiveResultsAdmin}>
               Terminar y Mostrar Resultados <Users size={20} />
             </button>
@@ -348,13 +348,13 @@ function App() {
 
         {!isAdmin && (
           <p style={{ color: '#a78bfa', fontWeight: 'bold', animation: 'pulse 2s infinite', textAlign: 'center' }}>
-            Siguiente pregunta en breve...
+            Próxima pregunta en breve...
           </p>
         )}
 
         {isAdmin && (
           <button className="btn-primary" style={{ width: '100%' }} onClick={goToNextQuestionAdmin}>
-            Siguiente Pregunta (Admin) <ArrowRight size={20} />
+            Pasar a la siguiente (Profe) <ArrowRight size={20} />
           </button>
         )}
       </div>
@@ -366,7 +366,7 @@ function App() {
       <div className="animate-pulse-slow">
         <Lightbulb size={80} color="#c084fc" style={{ margin: '0 auto 2rem auto' }} />
       </div>
-      <h2>Calculando el perfil del aula...</h2>
+      <h2>Calculando el perfil del curso...</h2>
       <p>Sumando los votos de todos los compañeros...</p>
     </div>
   );
@@ -378,13 +378,14 @@ function App() {
 
     return (
       <div className="glass-panel animate-fade-in" style={{ padding: '2rem' }}>
-        <div 
-          className="result-icon-container animate-float" 
-          style={{ background: `linear-gradient(135deg, ${profile.color}, #ffffff)` }}
-        >
-          <IconComponent size={48} color="#1e1b4b" />
+        <div style={{ marginBottom: '1.5rem' }}>
+          <img 
+            src={profile.gif} 
+            alt="Profile GIF" 
+            style={{ borderRadius: '12px', width: '100%', maxWidth: '300px', height: '200px', objectFit: 'cover', margin: '0 auto', display: 'block', border: `4px solid ${profile.color}` }} 
+          />
         </div>
-        <p style={{ fontSize: '1.25rem', color: '#cbd5e1', marginBottom: '0.5rem' }}>El perfil colectivo de la clase es:</p>
+        <p style={{ fontSize: '1.25rem', color: '#cbd5e1', marginBottom: '0.5rem' }}>El perfil de este curso es:</p>
         <h1 style={{ background: 'none', WebkitTextFillColor: 'initial', color: profile.color }}>
           {profile.title}
         </h1>
@@ -393,9 +394,9 @@ function App() {
         <div className="segmentation-box animate-fade-in" style={{ animationDelay: '1s', animationFillMode: 'both' }}>
           <h3><Lightbulb size={24} /> El poder de la Segmentación</h3>
           <p>
-            ¿Qué acaba de pasar? Acabamos de agrupar a toda el aula. Al ver qué respuestas ganaron, 
-            pudimos definir un <strong>PERFIL DE CLASE</strong>. En marketing, a esto le llamamos <strong>SEGMENTACIÓN</strong>. 
-            Es la herramienta clave para saber a quién le estamos hablando y adaptar nuestro mensaje.
+            ¿Qué onda esto? Acabamos de agrupar a todo el curso. Al ver qué respuestas ganaron, 
+            sacamos un <strong>PERFIL DE CLASE</strong>. En marketing y redes, a esto se le dice <strong>SEGMENTACIÓN</strong>. 
+            Así es como los algoritmos deciden qué mostrarte para mantenerte enganchado.
           </p>
         </div>
 

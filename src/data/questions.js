@@ -3,32 +3,32 @@ import { Ghost, Smartphone, Briefcase, Eye } from 'lucide-react';
 export const questions = [
   {
     id: 1,
-    question: "Son las 2 de la mañana y no puedes dormir. ¿Qué te tiene atrapado en el celular?",
+    question: "Son las 2 de la mañana y no podés dormir. ¿Qué te tiene re atrapado en el celu?",
     options: [
-      { text: "Un video de alguien cortando jabón mientras una voz robótica narra un chisme inventado", profile: "Frutinovelas" },
-      { text: "Scrolleando en automático, con la mirada perdida viendo memes que ya ni dan risa", profile: "Doomscroller" },
-      { text: "Un podcast de un flaco gritando que si no estás invirtiendo en IA, estás perdiendo plata", profile: "CEO" },
-      { text: "Un hilo larguísimo explicando cómo tu celular te escuchó hablar de colchones ayer", profile: "Conspiranoico" }
+      { text: "Un video de alguien cortando jabón mientras una voz robótica cuenta un chisme falopa", profile: "Frutinovelas" },
+      { text: "Scrolleando en automático como zombie viendo memes que ya ni dan gracia", profile: "Doomscroller" },
+      { text: "Un podcast de un chabón gritando que si no invertís en IA sos un fracasado", profile: "CEO" },
+      { text: "Un hilo larguísimo explicando cómo tu celu te escucha hablar todo el día", profile: "Conspiranoico" }
     ]
   },
   {
     id: 2,
-    question: "Te aparece publicidad de un curso: 'Cómo dominar la IA'. ¿Cómo reaccionas?",
+    question: "Te salta publicidad de un curso: 'Cómo dominar la IA'. ¿Qué hacés?",
     options: [
-      { text: "Lo ignoro, estoy dándole like a una foto de Jesús hecho de camarones con 2 millones de likes", profile: "Frutinovelas" },
-      { text: "Ya perdí la capacidad de prestar atención a algo de más de 15 segundos, sigo bajando", profile: "Doomscroller" },
-      { text: "Lo compro al instante, necesito optimizar mi productividad un 200% para ayer", profile: "CEO" },
-      { text: "Lo bloqueo, seguro es una estafa para robarme los datos biométricos de la cara", profile: "Conspiranoico" }
+      { text: "Lo ignoro mal, estoy dándole like a una foto de Jesús hecho de camarones", profile: "Frutinovelas" },
+      { text: "Ya perdí la capacidad de prestar atención más de 10 segundos, sigo bajando", profile: "Doomscroller" },
+      { text: "Lo compro de una, necesito optimizar mi productividad para ser mi propio jefe", profile: "CEO" },
+      { text: "Lo bloqueo, seguro es alta estafa para robarme los datos del celu", profile: "Conspiranoico" }
     ]
   },
   {
     id: 3,
-    question: "¿Qué le pedirías a una Inteligencia Artificial en este momento?",
+    question: "¿Qué le pedirías a ChatGPT o a otra IA en este momento?",
     options: [
-      { text: "Créame una historia de venganza súper dramática para subirla a TikTok con música triste", profile: "Frutinovelas" },
-      { text: "Resume este audio de WhatsApp de 1 minuto porque no tengo la paciencia para escucharlo", profile: "Doomscroller" },
-      { text: "¿Cuáles son los 5 prompts secretos para automatizar mi vida y hacerme millonario?", profile: "CEO" },
-      { text: "¿Cuánta información mía tienes guardada y cuándo planeas dominar a la humanidad?", profile: "Conspiranoico" }
+      { text: "Armame alta historia de venganza re dramática para subir a TikTok", profile: "Frutinovelas" },
+      { text: "Resumime este audio de WhatsApp de 1 minuto porque me da paja escucharlo", profile: "Doomscroller" },
+      { text: "Tirame los 5 prompts secretos para automatizar todo y hacerme millonario", profile: "CEO" },
+      { text: "¿Cuánta info mía tenés guardada y cuándo nos van a dominar las máquinas?", profile: "Conspiranoico" }
     ]
   }
 ];
@@ -36,26 +36,30 @@ export const questions = [
 export const profilesData = {
   "Frutinovelas": {
     title: "¡Consumidor de Frutinovelas!",
-    description: "El algoritmo detectó tu gusto culposo. Sabe que te quedas atrapado viendo dramas absurdos narrados por IA y videos surrealistas. ¡Te segmentó por tu tiempo de retención en el chisme!",
+    description: "El algoritmo ya te sacó la ficha de tu gusto culposo. Sabe que te re quedás viendo dramas falopa narrados por IA. ¡Te segmentó por tu tiempo de retención en el chisme!",
     color: "#ec4899", // Pink
-    icon: "Ghost"
+    icon: "Ghost",
+    gif: "https://media.giphy.com/media/l4Ho0At2UD2d7WyD6/giphy.gif" // Dramatic soap opera
   },
   "Doomscroller": {
     title: "¡Doomscroller Crónico!",
-    description: "El algoritmo sabe que tu cerebro necesita dopamina rápida. Te muestra videos cortos y memes infinitos porque sabe que tu dedo no puede dejar de scrollear. ¡Te segmentó por tu falta de atención!",
+    description: "El algoritmo sabe que tu cerebro necesita dopamina ya. Te tira videos cortos y memes infinitos porque sabe que no podés soltar el celu. ¡Te segmentó por tu falta de atención!",
     color: "#3b82f6", // Blue
-    icon: "Smartphone"
+    icon: "Smartphone",
+    gif: "https://media.giphy.com/media/3o6ozh46EBuLIYLIGQ/giphy.gif" // Homer staring at phone
   },
   "CEO": {
-    title: "¡El CEO de las 5 AM!",
-    description: "Te perfilaron como el 'Hustler'. Por eso te bombardean con podcasts de cripto, rutinas de estoicismo y herramientas de IA para ser más productivo. ¡Te segmentaron por tus búsquedas de éxito!",
+    title: "¡Mentalidad de Tiburón!",
+    description: "Te perfilaron como el 'Hustler'. Te llueven podcasts de cripto y herramientas de IA para ser más productivo y facturar. ¡Te segmentaron por tus búsquedas de éxito!",
     color: "#10b981", // Green
-    icon: "Briefcase"
+    icon: "Briefcase",
+    gif: "https://media.giphy.com/media/YmQLj2KxaVZ58q1111/giphy.gif" // Wolf of wall street / hype
   },
   "Conspiranoico": {
     title: "¡El Conspiranoico!",
-    description: "El algoritmo sabe que dudas de todo. Para mantenerte enganchado (engagement), te alimenta con teorías conspirativas, privacidad de datos y el fin del mundo por culpa de la IA. ¡Te segmentó por tu escepticismo!",
+    description: "El algoritmo sabe que dudás de todo. Para mantenerte enganchado (engagement), te tira teorías conspirativas, cosas de privacidad y el fin del mundo. ¡Te segmentó por tu nivel de paranoia!",
     color: "#8b5cf6", // Purple
-    icon: "Eye"
+    icon: "Eye",
+    gif: "https://media.giphy.com/media/l0IylOPKVkiVDZA0g/giphy.gif" // Charlie Day Pepe Silvia
   }
 };
